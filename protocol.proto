@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package server_client_protocol;
+
+message ClientToServerMessage {
+  oneof message {
+    Reset reset = 1;
+    ClientFrameCommand frame_command = 2;
+    ClientConfig config = 3;
+  }
+}
+
+message ServerToClientMessage {
+  oneof message {
+    ServerState response = 1;
+  }
+}
+
+message Reset {
+  // No fields needed for this message.
+}
+
+message ClientFrameCommand {
+  double steer = 1;
+  double acceleration = 2;
+  double t = 3;
+}
+
+message ServerState {
+  double velocity = 1;
+  repeated double lidar_distances = 2;
+  double car_x = 3;
+  double car_y = 4;
+  double car_angle = 5;
+  bool dead = 6;
+}
+
+message ClientConfig {
+  // No fields needed for this message yet.
+}
