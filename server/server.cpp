@@ -23,6 +23,8 @@ namespace Server {
         response.mutable_response()->set_car_y(car.pos.y());
         response.mutable_response()->set_car_angle(car.angle);
         response.mutable_response()->set_dead(car.isCrashed(track));
+        auto lidarDistances = car.getLidarDistances(track);
+        *response.mutable_response()->mutable_lidar_distances() = {lidarDistances.begin(), lidarDistances.end()};
         break;
       }
       case ClientToServerMessage::kReset: {

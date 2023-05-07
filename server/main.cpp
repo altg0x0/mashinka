@@ -17,28 +17,6 @@ void start_function(const Args& args) {
     serve(args.port_range_start);
 }
 
-void testConsole() {
-    auto ml = read_chains("../map.txt");
-    std::cout << ml.at(1).at(2).x();
-
-    std::string s;
-    Car c;
-    while (std::cin >> s) {
-        if (s == "svg") {
-            std::ofstream svg("transformationExample.svg");
-            bg::svg_mapper<Point> mapper(svg, 400, 400);
-            auto pol = c.getCollisionBox();
-            mapper.add(pol);
-            mapper.map(pol, "fill-opacity:0.5;fill:rgb(153,204,0);stroke:rgb(153,204,0);stroke-width:2");
-            continue;
-        }
-        double command = std::stof(s);
-        c.frame(1, command);
-        std::cout << (c.getPos()).x() << " " << (c.getPos()).y() << "\n";
-    }
-}
-
-
 int main(int argc, char** argv) {
     Args args = {1, 8100};
     

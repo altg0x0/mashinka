@@ -38,6 +38,8 @@ def send_and_receive(sock, steer, frame_time=0):
     msg = receive_message(sock, protocol.ServerToClientMessage)
     if msg.response.dead and random.randint(0, 10) == 2:
         print("deadge")
+    if random.randint(0, 5) == 2:
+        print(msg.response.lidar_distances[0])
     return (msg.response.car_x, msg.response.car_y, msg.response.car_angle)
 
 import pygame
@@ -78,8 +80,6 @@ def game(sock):
         dt = clock.tick(120)  # ms since last frame
         screen.fill((0, 0, 0))
 
-        # rect_surface, rect_rect = create_rotated_rect(pos[:2], pos[2], 30, 10)
-        # screen.blit(rect_surface, rect_rect)
         draw_rotated_rect(screen, pos[:2], (30, 10), pos[2])
         
         for ls in line_strings:
