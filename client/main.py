@@ -11,6 +11,34 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = ('localhost', 8100)
 sock.connect(server_address)
 
+def tuple_substract(a, b):
+    return tuple(x1 - x2 for x1, x2 in zip(a, b))
+
+class ScoreCounter():
+    DEFAULT_POS = (277, 603)  # default position of the car
+    frames = 0
+    center = (309, 377) 
+    internal_score = 0
+    prev_angle = None
+
+    @classmethod
+    def get_angle(cls, pos):
+        dx, dy = tuple_substract(pos, cls.center)
+        return math.atan2(dy, dx)
+    
+    @classmethod
+    def get_default_angle(cls):
+        return cls.get_angle(cls.DEFAULT_POS)
+    
+    def update(self, newPos):
+        self.frames += 1
+        new_angle = self.get_angle(newPos)
+        angle_delta = - new_angle + (self.prev_angle or self.get_default_angle())
+        self.internal_score += angle_delta if angle_delta > -math.pi else angle_delta + 2 * math.pi  # todo make more elegant
+
+    def get_score(self):
+        return 1e6 * self.internal_score / (1e6 + math.log(min(2, self.frames)))
+
 
 def send_message(sock, message):
     data = message.SerializeToString()
@@ -36,10 +64,10 @@ def send_and_receive(sock, steer, frame_time=0):
     wrapper_message.frame_command.t = frame_time
     send_message(sock, wrapper_message)
     msg = receive_message(sock, protocol.ServerToClientMessage)
-    if msg.response.dead and random.randint(0, 10) == 2:
-        print("deadge")
-    if random.randint(0, 5) == 2:
-        print(msg.response.lidar_distances[0])
+    # if msg.response.dead and random.randint(0, 10) == 2:
+    #     print("deadge")
+    # if random.randint(0, 5) == 2:
+    #     print(msg.response.lidar_distances[0])
     return (msg.response.car_x, msg.response.car_y, msg.response.car_angle)
 
 import pygame
@@ -76,6 +104,7 @@ def game(sock):
     angle = 0
     
     pos = send_and_receive(sock, 0, 0)
+    score_counter = ScoreCounter()
     while True:
         dt = clock.tick(120)  # ms since last frame
         screen.fill((0, 0, 0))
@@ -96,8 +125,11 @@ def game(sock):
             msg.reset.CopyFrom(protocol.Reset())
             send_message(sock, msg)
             time.sleep(0.2)
+        pos = send_and_receive(sock, steer, dt / 1000)
+        score_counter.update(pos[:2])
+        if random.randint(0, 10) == 2:
+            print(score_counter.get_score())
 
-        pos = send_and_receive(sock, steer, dt / 1000) 
         pygame.display.flip()
 
         for event in pygame.event.get():

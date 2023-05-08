@@ -39,5 +39,5 @@ public:
     static constexpr double angAcc = 2;    // angular acceleration of the car
     static constexpr double friction = 0.97;
     static constexpr unsigned int nLidars = 12;
-    static constexpr double lidarsMaxDistance = 200;
+    static constexpr double lidarsMaxDistance = 300;
 };

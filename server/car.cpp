@@ -55,7 +55,6 @@ std::vector<Segment> Car::getLidarSegments(unsigned int num_segments, double len
     {
         Point rotated_point;
         bg::transform(end_point, rotated_point, rotator);
-
         Point translated_point(rotated_point.x() + center.x(), rotated_point.y() + center.y());
         star.emplace_back(center, translated_point);
 
@@ -68,7 +67,7 @@ std::vector<Segment> Car::getLidarSegments(unsigned int num_segments, double len
 
 std::vector<double> Car::getLidarDistances(const MultiChain& track) {
     auto& pos_ref = pos;
-    std::vector<double> ret(Car::nLidars);
+    std::vector<double> ret(Car::nLidars, Car::lidarsMaxDistance);
     auto lidarSegments = getLidarSegments(nLidars, lidarsMaxDistance, angle);
     for (std::size_t ind = 0 ; auto& lidarSeg: lidarSegments) {
         MultiPoint intersection_points;
@@ -79,9 +78,6 @@ std::vector<double> Car::getLidarDistances(const MultiChain& track) {
         if (intersection_points.empty()) {
             continue;
         }
-        // auto closest_intersection = std::min_element(intersection_points.begin(), intersection_points.end(), [pos_ref](Point& a) {
-        //     return bg::distance(a, pos_ref);
-        // });
         auto closest_intersection = std::transform_reduce(
             intersection_points.begin(), intersection_points.end(),
             std::numeric_limits<double>::max(),
