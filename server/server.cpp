@@ -16,6 +16,9 @@ namespace Server {
 
   void constructResponse(ClientToServerMessage& request, ServerToClientMessage& response) {
     switch (request.message_case()) {
+      case ClientToServerMessage::kReset: {
+        Server::car = Car(277, 603, 3.1);  // no break!
+      }
       case ClientToServerMessage::kFrameCommand: {
         auto command = request.frame_command();
         car.frame(command.t(), command.steer());
@@ -27,13 +30,10 @@ namespace Server {
         *response.mutable_response()->mutable_lidar_distances() = {lidarDistances.begin(), lidarDistances.end()};
         break;
       }
-      case ClientToServerMessage::kReset: {
-        Server::car = Car(277, 603, 3.1);
-        break;
-      }
       default: break;
     }
   }
+  
 
   void process_messages(tcp::socket& socket) {
     while (true) {
