@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
+
 #include <boost/program_options.hpp>
 
 #include "map_reader.hpp"
@@ -14,7 +16,13 @@ struct Args {
 void start_function(const Args& args) {
     auto track = read_chains("../../map.txt");
     setTrack(track);
-    serve(args.port_range_start);
+    int i = 0;
+    for (; i < args.num_forks - 1; i++) {
+        auto process_id = fork();
+        if (process_id > 0)
+            break;
+    }
+    serve(args.port_range_start + i);
 }
 
 int main(int argc, char** argv) {
