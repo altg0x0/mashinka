@@ -79,9 +79,9 @@ def fitness_function(ga, solution, sol_idx):
         )
         sc = scorer.get_score()
         if resp.dead:
-            if sc > 10 or random.randint(0, 10) == 1:
+            if sc > 8e9 or random.randint(0, 50) == 1:
                 print(sc, flush=True)
-            time.sleep(0.01)
+            # time.sleep(0.01)
             return scorer.get_score()
         resp = send_and_receive(sock, predictions[0][0] * 2 - 1, 1/60)
         pos = (resp.car_x, resp.car_y, resp.car_angle)
@@ -105,7 +105,7 @@ def game():
     # screen = pygame.display.set_mode((WIDTH, HEIGHT))
     # pygame.display.set_caption("Mashinka gann client")
     GANN_instance = pygad.gann.GANN(
-        num_solutions=40,
+        num_solutions=96,
         num_neurons_input=17,
         num_neurons_hidden_layers=[12, 6],
         num_neurons_output=1,
