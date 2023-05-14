@@ -72,7 +72,10 @@ void serve(int port) {
       acceptor.accept(socket);
       Server::process_messages(socket);
     }
-    catch (boost::system::system_error er) {
+    catch (boost::system::system_error& er) {
+      if (er.code() == boost::asio::error::eof) {
+        continue;
+      }
       std::cerr << "Error: " << er.what() << "\n";
       continue;
     }
