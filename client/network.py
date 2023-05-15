@@ -8,20 +8,24 @@ def send_message(sock, message):
     sock.sendall(length + data)
 
 
-def receive_message(sock, message_type):
+def receive_message(sock, message_type, logger_buffer=None):
     length_data = sock.recv(4)
     length, = struct.unpack('I', length_data)
     data = sock.recv(length)
     message = message_type()
     message.ParseFromString(data)
+    if logger_buffer:
+        logger_buffer.write(length_data)
+        logger_buffer.write(data)
+        # print(1, len(logger_buffer.getvalue()))
     return message
 
-def send_and_receive(sock, steer, frame_time=0):
+def send_and_receive(sock, steer, frame_time=0, logger_buffer=None):
     wrapper_message = protocol.ClientToServerMessage()
     wrapper_message.frame_command.steer = steer
     wrapper_message.frame_command.t = frame_time
     send_message(sock, wrapper_message)
-    msg = receive_message(sock, protocol.ServerToClientMessage)
+    msg = receive_message(sock, protocol.ServerToClientMessage, logger_buffer=logger_buffer)
     return msg.response
 
 def send_and_receive_pos(sock, steer, frame_time=0):

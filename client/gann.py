@@ -1,4 +1,5 @@
 from functools import wraps
+import io
 import math
 import random
 import socket
@@ -59,6 +60,7 @@ set_start_method('fork', force=True)
 # @process_socket
 # def fitness_function(sock, ga, solution, sol_idx):
 def fitness_function(ga, solution, sol_idx):
+    buffer = io.BytesIO()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ("localhost", 8100 + sol_idx % 16)
     sock.connect(server_address)
@@ -78,19 +80,21 @@ def fitness_function(ga, solution, sol_idx):
                 ])]),
         )
         sc = scorer.get_score()
+        if sc > 1000 and scorer.frames % 10000 == 0:
+            print(f"VERY GOOD! score={sc:.01f}", flush=True)
+            with open(f"sol_{sol_idx}.bin", "wb") as f:
+                f.write(buffer.getvalue())
         if resp.dead:
             if sc > 8e9 or random.randint(0, 50) == 1:
-                print(sc, flush=True)
+                print(f"s={sc:.02f}", flush=True)
             # time.sleep(0.01)
             return scorer.get_score()
-        resp = send_and_receive(sock, predictions[0][0] * 2 - 1, 1/60)
+        resp = send_and_receive(sock, predictions[0][0] * 2 - 1, 1/60, logger_buffer=buffer)
         pos = (resp.car_x, resp.car_y, resp.car_angle)
         # if sol_idx == 1000 or sc > 100:
         #     draw_pos(pos)
         scorer.update(pos)
         # exit_events()
-        if sc > 100:
-            time.sleep(0.005)
 
 def callback_generation(ga_instance):        
     population_matrices = pygad.gann.population_as_matrices(population_networks=GANN_instance.population_networks,
@@ -105,7 +109,7 @@ def game():
     # screen = pygame.display.set_mode((WIDTH, HEIGHT))
     # pygame.display.set_caption("Mashinka gann client")
     GANN_instance = pygad.gann.GANN(
-        num_solutions=96,
+        num_solutions=64,
         num_neurons_input=17,
         num_neurons_hidden_layers=[12, 6],
         num_neurons_output=1,
